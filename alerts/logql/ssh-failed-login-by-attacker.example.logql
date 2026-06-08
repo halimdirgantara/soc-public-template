@@ -1,0 +1,8 @@
+sum by (host, server_ip, src_ip) (
+  count_over_time(
+    {org="example-org"}
+    |~ "Failed password|Invalid user|authentication failure"
+    | regexp "(?:from|rhost=)(?P<src_ip>(?:[0-9]{1,3}\\.){3}[0-9]{1,3})"
+    [5m]
+  )
+)

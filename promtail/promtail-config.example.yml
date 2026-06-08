@@ -1,0 +1,60 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /var/lib/promtail/positions.yml
+
+clients:
+  - url: ${LOKI_PUSH_URL}
+
+scrape_configs:
+  - job_name: auth
+    static_configs:
+      - targets: [localhost]
+        labels:
+          org: ${ORG_LABEL}
+          host: ${HOSTNAME}
+          server_ip: ${SERVER_IP}
+          job: auth
+          __path__: /var/log/auth.log
+
+  - job_name: syslog
+    static_configs:
+      - targets: [localhost]
+        labels:
+          org: ${ORG_LABEL}
+          host: ${HOSTNAME}
+          server_ip: ${SERVER_IP}
+          job: syslog
+          __path__: /var/log/syslog
+
+  - job_name: kern
+    static_configs:
+      - targets: [localhost]
+        labels:
+          org: ${ORG_LABEL}
+          host: ${HOSTNAME}
+          server_ip: ${SERVER_IP}
+          job: kern
+          __path__: /var/log/kern.log
+
+  - job_name: nginx
+    static_configs:
+      - targets: [localhost]
+        labels:
+          org: ${ORG_LABEL}
+          host: ${HOSTNAME}
+          server_ip: ${SERVER_IP}
+          job: nginx
+          __path__: /var/log/nginx/*.log
+
+  - job_name: custom-nginx
+    static_configs:
+      - targets: [localhost]
+        labels:
+          org: ${ORG_LABEL}
+          host: ${HOSTNAME}
+          server_ip: ${SERVER_IP}
+          job: custom-nginx
+          __path__: /opt/webpanel/nginx/logs/*.log

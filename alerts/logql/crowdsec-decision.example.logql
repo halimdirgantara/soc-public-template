@@ -1,0 +1,7 @@
+sum by (host, server_ip) (
+  count_over_time(
+    {org="example-org"}
+    |~ "crowdsecurity/.+|ban:1|Ip:.*ban|overflow"
+    [5m]
+  )
+)

@@ -1,0 +1,9 @@
+sum by (host, server_ip) (
+  count_over_time(
+    {org="example-org", job=~"nginx.*|.*nginx.*"}
+    |~ "wp-login|phpmyadmin|\\.env|\\.git|/etc/passwd|cgi-bin|server-status"
+    != "scanner-user-agent"
+    != "10.0.0.30"
+    [10m]
+  )
+)

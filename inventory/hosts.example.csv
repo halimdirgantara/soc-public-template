@@ -1,0 +1,6 @@
+host,server_ip,public_ip,hostname,exposure_type,ssh_user,ssh_port,role,enabled
+soc-loki,10.0.0.10,,soc-loki,internal,ubuntu,22,loki,true
+soc-grafana,10.0.0.11,203.0.113.10,soc-grafana,reverse_proxy,ubuntu,22,grafana,true
+app-public-01,10.0.0.21,203.0.113.21,app-public-01,public_direct,ubuntu,22,web-public,true
+app-proxy-01,10.0.0.22,203.0.113.22,app-proxy-01,reverse_proxy,ubuntu,22,web-proxy,true
+scanner-01,10.0.0.30,,scanner-01,internal,ubuntu,22,scanner,false

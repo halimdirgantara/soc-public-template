@@ -1,0 +1,56 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# SSH and TLS secrets
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa
+id_ed25519
+known_hosts
+
+# Cloudflare and tunnel credentials
+credentials.json
+cloudflare/*.json
+cloudflared/*.json
+cert.pem
+
+# CrowdSec credentials
+local_api_credentials.yaml
+online_api_credentials.yaml
+crowdsec/secrets/
+crowdsec/**/*.bak
+
+# Grafana secrets
+grafana/secrets/
+grafana/**/*.db
+
+# Production inventory must never be committed
+inventory/hosts.production.csv
+inventory/*production*.csv
+inventory/*real*.csv
+inventory/*secret*.csv
+inventory/*private*.csv
+
+# Runtime, backup, logs
+*.log
+*.tmp
+*.bak
+*.tar
+*.tar.gz
+*.zip
+backup/
+backups/
+support-bundle/
+data/
+runtime/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,42 @@
+name: Basic repository checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  basic-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect obvious secrets in committed files
+        run: |
+          set -e
+          if grep -RInE "(TELEGRAM_BOT_TOKEN=([0-9]+:)|password=|PRIVATE KEY|api[_-]?key|secret)" . \
+            --exclude-dir=.git \
+            --exclude=.env.example; then
+            echo "Potential secret found. Review output above."
+            exit 1
+          fi
+
+      - name: Validate YAML syntax
+        run: |
+          python - <<'PY'
+          import os, sys, yaml
+          failed = False
+          for root, _, files in os.walk("."):
+              if ".git" in root:
+                  continue
+              for f in files:
+                  if f.endswith((".yml", ".yaml")):
+                      p = os.path.join(root, f)
+                      try:
+                          with open(p, "r", encoding="utf-8") as fh:
+                              list(yaml.safe_load_all(fh))
+                          print(f"OK {p}")
+                      except Exception as e:
+                          failed = True
+                          print(f"FAIL {p}: {e}")
+          sys.exit(1 if failed else 0)
+          PY

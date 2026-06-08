@@ -1,0 +1,13 @@
+# Example for non-standard Nginx log paths.
+# Replace with your actual private path in the private repository.
+
+filenames:
+  - /opt/webpanel/nginx/logs/*.log
+  - /opt/webpanel/wwwlogs/*.log
+labels:
+  type: nginx
+---
+filenames:
+  - /var/log/auth.log
+labels:
+  type: syslog
