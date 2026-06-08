@@ -1,5 +1,8 @@
 # Open SOC Deployment Template
 
+<img width="1448" height="1086" alt="image" src="https://github.com/user-attachments/assets/6f4253c5-da47-4f68-a2e5-069f6b5b4d7d" />
+
+
 A sanitized public template for deploying a lightweight open-source SOC stack.
 
 This repository provides example configurations, scripts, LogQL alert templates, and operational documentation for:
