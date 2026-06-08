@@ -56,16 +56,16 @@ Edit `.env` locally. Do not commit it.
 
 ```text
 .
-â”œâ”€â”€ inventory/
-â”œâ”€â”€ grafana/
-â”œâ”€â”€ loki/
-â”œâ”€â”€ promtail/
-â”œâ”€â”€ crowdsec/
-â”œâ”€â”€ nginx/
-â”œâ”€â”€ cloudflare/
-â”œâ”€â”€ alerts/
-â”œâ”€â”€ scripts/
-â”œâ”€â”€ docs/
+inventory/
+grafana/
+loki/
+promtail/
+crowdsec/
+nginx/
+cloudflare/
+alerts/
+scripts/
+docs/
 â””â”€â”€ skills/
 ```
 
