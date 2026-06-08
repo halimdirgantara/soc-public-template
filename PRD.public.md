@@ -4,21 +4,11 @@
 
 This repository is a sanitized public template for building a lightweight open-source SOC deployment stack.
 
-The stack includes:
-
-- Grafana for dashboards and alerting.
-- Loki for centralized log storage.
-- Promtail for log shipping.
-- CrowdSec for detection and security decisions.
-- CrowdSec Firewall Bouncer for host-level blocking.
-- Telegram for alert notification.
-- Nginx and Cloudflare notes for reverse proxy and public access patterns.
+The stack includes Grafana, Loki, Promtail, CrowdSec, CrowdSec Firewall Bouncer, Telegram alerting, Nginx reverse proxy examples, and Cloudflare notes.
 
 This public repository must not contain production topology, real IP addresses, real hostnames, or secrets.
 
 ## 2. Goals
-
-The repository should help users:
 
 1. Build a repeatable open-source SOC baseline.
 2. Centralize Linux, SSH, Nginx, UFW, and CrowdSec logs.
@@ -41,22 +31,20 @@ This repository does not provide:
 
 ## 4. Public-Safe Data Rules
 
-Allowed in this repository:
+Allowed:
 
 - Dummy IP addresses.
 - Example domains.
 - Generic LogQL queries.
 - Generic Grafana dashboard templates.
 - Example inventory.
-- Example `.env.example`.
-- Generic scripts.
-- Generic SOP documentation.
+- `.env.example`.
+- Generic scripts and SOP documentation.
 
 Not allowed:
 
 - Real IP addresses.
 - Real hostnames.
-- Real domain names if sensitive.
 - Real Telegram token or chat ID.
 - Real Cloudflare tunnel credentials.
 - Real SSH username/password/private key.
@@ -86,8 +74,6 @@ Server logs
 ```
 
 ## 6. Standard Labels
-
-Recommended Loki labels:
 
 ```text
 org="example-org"

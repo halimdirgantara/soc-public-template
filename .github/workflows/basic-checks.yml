@@ -11,6 +11,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Detect obvious secrets in committed files
+        shell: bash
         run: |
           set -e
           if grep -RInE "(TELEGRAM_BOT_TOKEN=([0-9]+:)|password=|PRIVATE KEY|api[_-]?key|secret)" . \
@@ -21,22 +22,30 @@ jobs:
           fi
 
       - name: Validate YAML syntax
+        shell: bash
         run: |
           python - <<'PY'
-          import os, sys, yaml
+          import os
+          import sys
+          import yaml
+
           failed = False
+
           for root, _, files in os.walk("."):
               if ".git" in root:
                   continue
-              for f in files:
-                  if f.endswith((".yml", ".yaml")):
-                      p = os.path.join(root, f)
+
+              for filename in files:
+                  if filename.endswith((".yml", ".yaml")):
+                      path = os.path.join(root, filename)
+
                       try:
-                          with open(p, "r", encoding="utf-8") as fh:
-                              list(yaml.safe_load_all(fh))
-                          print(f"OK {p}")
-                      except Exception as e:
+                          with open(path, "r", encoding="utf-8") as handle:
+                              list(yaml.safe_load_all(handle))
+                          print(f"OK {path}")
+                      except Exception as exc:
                           failed = True
-                          print(f"FAIL {p}: {e}")
+                          print(f"FAIL {path}: {exc}")
+
           sys.exit(1 if failed else 0)
           PY
