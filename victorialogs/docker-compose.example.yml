@@ -1,0 +1,14 @@
+services:
+  victorialogs:
+    image: victoriametrics/victoria-logs:latest
+    container_name: victorialogs
+    restart: unless-stopped
+    ports:
+      - 9428:9428
+    volumes:
+      - /var/lib/victorialogs:/victoria-logs-data
+    command:
+      - -storageDataPath=/victoria-logs-data
+      - -httpListenAddr=:9428
+      - -memory.allowedPercent=20
+      - -logNewStreams=false

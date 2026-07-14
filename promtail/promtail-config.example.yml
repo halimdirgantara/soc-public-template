@@ -6,7 +6,11 @@ positions:
   filename: /var/lib/promtail/positions.yml
 
 clients:
+  # Loki (legacy) — remove when fully migrated
   - url: ${LOKI_PUSH_URL}
+  
+  # VictoriaLogs — low-memory replacement for Loki
+  # - url: ${VL_PUSH_URL}
 
 scrape_configs:
   - job_name: auth

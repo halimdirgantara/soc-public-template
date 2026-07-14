@@ -2,12 +2,13 @@
 
 <img width="1448" height="1086" alt="image" src="https://github.com/user-attachments/assets/6f4253c5-da47-4f68-a2e5-069f6b5b4d7d" />
 
-A sanitized public template for deploying a lightweight open-source SOC stack.
+|A sanitized public template for deploying a lightweight open-source SOC stack.
 
-This repository provides example configurations, scripts, LogQL alert templates, and operational documentation for:
+This repository provides example configurations, scripts, alert templates (LogQL), and operational documentation for:
 
 - Grafana
-- Loki
+- Loki (optional — VictoriaLogs available as low-memory alternative)
+- VictoriaLogs
 - Promtail
 - CrowdSec
 - CrowdSec Firewall Bouncer
@@ -62,6 +63,7 @@ Edit `.env` locally. Do not commit it.
 ├── inventory/
 ├── grafana/
 ├── loki/
+├── victorialogs/
 ├── promtail/
 ├── crowdsec/
 ├── nginx/
@@ -77,8 +79,8 @@ Edit `.env` locally. Do not commit it.
 ## Main Workflow
 
 1. Prepare inventory using `inventory/hosts.example.csv`.
-2. Deploy Loki.
-3. Deploy Grafana and configure Loki datasource.
+2. Deploy Loki (or VictoriaLogs for low-RAM environments).
+3. Deploy Grafana and configure Loki/VictoriaLogs datasource.
 4. Deploy Promtail agents.
 5. Deploy CrowdSec on exposed servers.
 6. Deploy firewall bouncer after whitelist review.
