@@ -1,3 +1,5 @@
+# LEGACY — rollback only. The default log store is VictoriaLogs
+# (see victorialogs/docker-compose.example.yml).
 services:
   loki:
     image: grafana/loki:latest

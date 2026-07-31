@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# loki-triage.example.sh
+# loki-triage.example.sh  [LEGACY — use vl-triage.example.sh instead]
 #
 # Query Loki for Laravel application errors on a given host.
+# Kept only for rollback to Loki. New deployments should use VictoriaLogs.
 # Copy this file to ~/soc-tools/loki-triage.sh on the Hermes node and make it executable.
 #
 # Usage:

@@ -18,7 +18,7 @@ The preparation focuses on:
 - Handling special hosts that use a different SSH user.
 - Troubleshooting apt lock, sudo password issues, and SSH permission errors.
 
-This procedure is designed for a lightweight SOC deployment using Grafana, Loki, Promtail, Fail2Ban, UFW, Telegram alerting, and optional Hermes-style notification integration.
+This procedure is designed for a lightweight SOC deployment using Grafana, VictoriaLogs, Promtail, Fail2Ban, UFW, Telegram alerting, and optional Hermes-style notification integration.
 
 ## 2. Public Repository Safety Rules
 
@@ -276,7 +276,7 @@ Expected:
 active
 ```
 
-If missing or inactive, deploy Promtail using the repository's Promtail agent script or your internal deployment script. Keep real Loki URLs and labels in the private repository.
+If missing or inactive, deploy Promtail using the repository's Promtail agent script or your internal deployment script. Keep real VictoriaLogs URLs and labels in the private repository.
 
 ## 11. Enable UFW Safely
 

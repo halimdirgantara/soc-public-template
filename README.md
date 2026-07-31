@@ -4,11 +4,11 @@
 
 |A sanitized public template for deploying a lightweight open-source SOC stack.
 
-This repository provides example configurations, scripts, alert templates (LogQL), and operational documentation for:
+This repository provides example configurations, scripts, alert templates, and operational documentation for:
 
 - Grafana
-- Loki (optional — VictoriaLogs available as low-memory alternative)
-- VictoriaLogs
+- VictoriaLogs (default log store — low-memory Loki replacement)
+- Loki (legacy — kept for rollback only)
 - Promtail
 - CrowdSec
 - CrowdSec Firewall Bouncer
@@ -62,13 +62,15 @@ Edit `.env` locally. Do not commit it.
 .
 ├── inventory/
 ├── grafana/
-├── loki/
-├── victorialogs/
+├── victorialogs/            # default log store
+├── loki/                    # legacy (rollback only)
 ├── promtail/
 ├── crowdsec/
 ├── nginx/
 ├── cloudflare/
 ├── alerts/
+│   ├── logsql/              # VictoriaLogs queries (default)
+│   └── logql/               # Loki queries (legacy)
 ├── scripts/
 │   └── soc-tools/           # Hermes triage scripts
 ├── docs/
@@ -79,9 +81,9 @@ Edit `.env` locally. Do not commit it.
 ## Main Workflow
 
 1. Prepare inventory using `inventory/hosts.example.csv`.
-2. Deploy Loki (or VictoriaLogs for low-RAM environments).
-3. Deploy Grafana and configure Loki/VictoriaLogs datasource.
-4. Deploy Promtail agents.
+2. Deploy VictoriaLogs (default — see `victorialogs/`). Loki is legacy/rollback only.
+3. Deploy Grafana and configure the VictoriaLogs datasource (`victoriametrics-logs-datasource` plugin).
+4. Deploy Promtail agents (push to `VL_PUSH_URL`, e.g. `http://<vl>:9428/insert/loki/api/v1/push`).
 5. Deploy CrowdSec on exposed servers.
 6. Deploy firewall bouncer after whitelist review.
 7. Configure Telegram alerting.
@@ -99,6 +101,7 @@ Edit `.env` locally. Do not commit it.
 | `docs/04-make-scripts-executable.md` | Script permissions |
 | `docs/05-fail2ban-hermes-prep.md` | Fail2Ban hardening and Hermes node prep |
 | `docs/06-hermes-soc-tools-triage.md` | Hermes Agent, SOC triage tools, local skills |
+| `docs/07-migration-loki-to-victorialogs.md` | Loki → VictoriaLogs migration guide |
 
 ## Skills
 

@@ -2,13 +2,13 @@
 
 > Public-safe implementation note for `soc-public-template`.
 >
-> This document uses sanitized placeholder values throughout. Replace `LOKI_SERVER_IP`, `GRAFANA_SERVER_IP`, `HERMES_NODE_IP`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, and any instance-specific labels before using in production.
+> This document uses sanitized placeholder values throughout. Replace `VL_SERVER_IP`, `GRAFANA_SERVER_IP`, `HERMES_NODE_IP`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, and any instance-specific labels before using in production.
 
 ## 1. Purpose
 
 Hermes is used as a SOC assistant to help operators perform:
 
-- Grafana/Loki alert triage
+- Grafana/VictoriaLogs alert triage
 - Laravel log analysis
 - SSH brute-force investigation
 - Fail2Ban, UFW, and Promtail status checks
@@ -24,9 +24,9 @@ Application Servers / VM
         |
     Promtail
         v
-   Loki Server
+  VictoriaLogs Server (:9428)
         v
- Grafana Alerting
+ Grafana Alerting / Watchdog bot
         |
   Telegram / Webhook / Operator Prompt
         v
@@ -38,12 +38,14 @@ Application Servers / VM
 Example environment variables (sanitized):
 
 ```bash
-SOC_LOKI_URL="http://LOKI_SERVER_IP:3100"
+SOC_VL_URL="http://VL_SERVER_IP:9428/select/logsql/query"
 SOC_GRAFANA_URL="http://GRAFANA_SERVER_IP"
 SOC_INSTANSI="example-org"
 ```
 
-For public repositories, use placeholders such as `LOKI_SERVER_IP`, `GRAFANA_SERVER_IP`, `HERMES_NODE_IP`, `TELEGRAM_BOT_TOKEN`, and `TELEGRAM_CHAT_ID`.
+> Legacy Loki is reachable via `SOC_LOKI_URL="http://LOKI_SERVER_IP:3100"` for rollback only.
+
+For public repositories, use placeholders such as `VL_SERVER_IP`, `GRAFANA_SERVER_IP`, `HERMES_NODE_IP`, `TELEGRAM_BOT_TOKEN`, and `TELEGRAM_CHAT_ID`.
 
 ## 3. Hermes Server Prerequisites
 
@@ -119,7 +121,7 @@ TELEGRAM_BOT_TOKEN="TELEGRAM_BOT_TOKEN"
 TELEGRAM_ALLOWED_USERS="TELEGRAM_CHAT_ID"
 TELEGRAM_HOME_CHANNEL="TELEGRAM_CHAT_ID"
 OPENROUTER_API_KEY="YOUR_OPENROUTER_API_KEY"
-SOC_LOKI_URL="http://LOKI_SERVER_IP:3100"
+SOC_VL_URL="http://VL_SERVER_IP:9428/select/logsql/query"
 SOC_GRAFANA_URL="http://GRAFANA_SERVER_IP"
 SOC_INSTANSI="example-org"
 ```
@@ -174,7 +176,7 @@ Check logs:
 journalctl --user -u hermes-gateway -n 100 --no-pager
 ```
 
-## 7. Validating Loki and Grafana Connectivity
+## 7. Validating VictoriaLogs and Grafana Connectivity
 
 From the Hermes node:
 
@@ -182,15 +184,22 @@ From the Hermes node:
 set -a
 source ~/.hermes/.env
 set +a
-curl -s "$SOC_LOKI_URL/ready"
-curl -s "$SOC_LOKI_URL/loki/api/v1/labels" | jq
-curl -s "$SOC_LOKI_URL/loki/api/v1/label/host/values" | jq
+curl -s "$SOC_VL_URL" --data-urlencode 'query=_time:5m _msg:* | limit 1'
 ```
 
-Expected Loki response:
+Expected VictoriaLogs response:
 
 ```text
-ready
+{"_time":"...","_msg":"...", ...}
+```
+
+(one JSON object per log line, or empty when no logs in range)
+
+Legacy Loki validation (rollback only):
+
+```bash
+curl -s "http://LOKI_SERVER_IP:3100/ready"
+curl -s "http://LOKI_SERVER_IP:3100/loki/api/v1/labels" | jq
 ```
 
 ## 8. Creating Local SOC Tools
@@ -205,13 +214,15 @@ Scripts live in this repo under `scripts/soc-tools/`. Copy and adapt them to `~/
 
 ### 8.1 Laravel Error Triage
 
-See `scripts/soc-tools/loki-triage.example.sh`.
+See `scripts/soc-tools/vl-triage.example.sh` (VictoriaLogs / LogsQL).
 
 Usage:
 
 ```bash
-~/soc-tools/loki-triage.sh "web-admin" ".*" "30m"
+~/soc-tools/vl-triage.sh "web-admin" ".*" "30m"
 ```
+
+> Legacy: `scripts/soc-tools/loki-triage.example.sh` is kept for rollback only.
 
 ### 8.2 SSH Brute-Force Triage
 
@@ -232,6 +243,12 @@ Usage:
 ```bash
 ~/soc-tools/malware-watch-summary.sh "web-opd-filament"
 ```
+
+### 8.4 VictoriaLogs Watchdog Bot
+
+See `scripts/soc-tools/vl-monitor.example.py`. Polls VictoriaLogs LogsQL every
+5 minutes and sends Telegram alerts — no Grafana alert rules required (see
+section 13 "Watchdog bot").
 
 ## 9. Adding a Local SOC Skill to Hermes
 
@@ -335,7 +352,7 @@ When using cybersecurity skills:
 1. Prioritise defensive use: detection, triage, incident response, hardening, and evidence preservation.
 2. Do not perform offensive actions, credential attacks, exploitation, C2 setup, persistence, or destructive steps unless explicitly authorised in a lab or penetration test context.
 3. For production SOC systems, never run commands that delete, stop, block, ban, quarantine, or modify firewall rules without explicit operator confirmation.
-4. Use Loki, Grafana, Fail2Ban, Promtail, UFW, and system logs as evidence sources.
+4. Use VictoriaLogs, Grafana, Fail2Ban, Promtail, UFW, and system logs as evidence sources.
 5. In operator-facing responses, separate evidence from assumptions.
 6. For malware incidents, preserve evidence before containment.
 7. For firewall or Fail2Ban actions, show the proposed command and expected impact before execution.
@@ -353,14 +370,14 @@ SSH brute-force:
 
 ```text
 Use the SOC local skill and local tools. Triage SSH brute-force for host web-admin over the last 30 minutes.
-Do not run destructive commands. Show evidence from Loki, a true/false positive conclusion, and a safe recommendation.
+Do not run destructive commands. Show evidence from VictoriaLogs, a true/false positive conclusion, and a safe recommendation.
 ```
 
 Laravel error:
 
 ```text
 Use the SOC local skill. Investigate Laravel production.ERROR on app web-opd-filament over the last 1 hour.
-Pull data from Loki, show sample log lines, host, app, event count, and likely cause. Do not modify the system.
+Pull data from VictoriaLogs, show sample log lines, host, app, event count, and likely cause. Do not modify the system.
 ```
 
 Malware watch:
@@ -373,7 +390,7 @@ Separate critical, warning, and containment recommendations. Do not quarantine b
 Grafana alert:
 
 ```text
-I have a Grafana alert. Triage it with the SOC workflow: validate in Loki, check host/app, count events,
+I have a Grafana alert. Triage it with the SOC workflow: validate in VictoriaLogs, check host/app, count events,
 find sample logs, draw a conclusion, then recommend non-destructive actions.
 ```
 
@@ -409,6 +426,24 @@ In production, all of the following must require explicit operator approval:
 - `systemctl stop`
 - Changes to Nginx or PHP-FPM configuration
 
+### Watchdog bot (recommended — no Grafana alerting required)
+
+Production deployments can skip Grafana alerting entirely and poll VictoriaLogs
+directly from a small watchdog script every 5 minutes. The script queries
+`/select/logsql/query` for the alert queries in `alerts/logsql/`, then sends
+notifications via the Telegram bot. This avoids Grafana alert-rule complexity
+and works even when Grafana is down.
+
+```text
+VictoriaLogs
+     ↓ (poll every 5m, LogsQL queries)
+Watchdog script (e.g. ~/.hermes/scripts/vl-monitor.py)
+     ↓
+Telegram bot notification
+     ↓
+Operator reviews / Hermes triages
+```
+
 ## 14. Daily Operational Commands
 
 Check Hermes Gateway:
@@ -418,11 +453,10 @@ systemctl --user status hermes-gateway --no-pager
 journalctl --user -u hermes-gateway -n 80 --no-pager
 ```
 
-Check Loki:
+Check VictoriaLogs:
 
 ```bash
-curl -s "$SOC_LOKI_URL/ready"
-curl -s "$SOC_LOKI_URL/loki/api/v1/labels" | jq
+curl -s "$SOC_VL_URL" --data-urlencode 'query=_time:5m _msg:* | limit 1'
 ```
 
 Check malware watch:
@@ -447,7 +481,7 @@ Check SSH attacks:
 Check Laravel errors:
 
 ```bash
-~/soc-tools/loki-triage.sh ".*" ".*" "30m"
+~/soc-tools/vl-triage.sh ".*" ".*" "30m"
 ```
 
 ## 15. Recommended Repository Structure
@@ -458,9 +492,11 @@ soc-public-template/
 │   └── 06-hermes-soc-tools-triage.md   ← this document
 ├── scripts/
 │   └── soc-tools/
-│       ├── loki-triage.example.sh
+│       ├── vl-triage.example.sh
 │       ├── ssh-triage.example.sh
-│       └── malware-watch-summary.example.sh
+│       ├── loki-triage.example.sh   # legacy (rollback only)
+│       ├── malware-watch-summary.example.sh
+│       └── vl-monitor.example.py    # watchdog bot (Telegram)
 └── skills/
     └── 08-hermes-soc-local/
         └── SKILL.md
@@ -484,12 +520,12 @@ curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates" | jq
 
 Send at least one message from the operator account to the bot first, then retry.
 
-### Loki unreachable
+### VictoriaLogs unreachable
 
 ```bash
-curl -v "$SOC_LOKI_URL/ready"
+curl -v "$SOC_VL_URL" --data-urlencode 'query=_time:5m _msg:* | limit 1'
 ip route
-ss -tupna | grep 3100
+ss -tupna | grep 9428
 ```
 
 ### Hermes Gateway stops after logout

@@ -1,6 +1,6 @@
-# VictoriaLogs — Alternative to Loki (Low Memory)
+# VictoriaLogs — Default Log Store (Loki Replacement)
 
-VictoriaLogs is a **drop-in replacement for Loki** designed for environments with limited RAM.  
+VictoriaLogs is a **drop-in replacement for Loki** designed for environments with limited RAM.
 Memory usage: **~14 MB** vs Loki's **5–6 GB** for the same log volume.
 
 ## Why VictoriaLogs?
@@ -15,7 +15,7 @@ Memory usage: **~14 MB** vs Loki's **5–6 GB** for the same log volume.
 ## Architecture
 
 ```
-Promtail → VictoriaLogs (:9428) → Grafana (victoriametrics-datasource plugin)
+Promtail → VictoriaLogs (:9428) → Grafana (victoriametrics-logs-datasource plugin)
 ```
 
 ### Ports
@@ -34,7 +34,8 @@ docker run -d --restart unless-stopped \
   victoriametrics/victoria-logs
 
 # Verify
-curl http://localhost:9428/api/v1/query -d 'query={_msg="*"}'
+curl http://localhost:9428/health
+curl 'http://localhost:9428/select/logsql/query' -d 'query=_time:5m _msg:* | limit 5'
 ```
 
 ## Persistent storage
@@ -69,34 +70,69 @@ command:
   - -logNewStreams=false         # reduce in-memory stream tracking
 ```
 
+## Promtail ingestion
+
+VictoriaLogs accepts the Loki push protocol — point Promtail at the
+**`/insert/loki/api/v1/push`** path (not `/api/v1/push`):
+
+```yaml
+clients:
+  - url: http://YOUR_SERVER_IP:9428/insert/loki/api/v1/push
+```
+
+## Grafana datasource
+
+Use the **`victoriametrics-logs-datasource`** plugin (for logs — the
+`victoriametrics-datasource` plugin is for VictoriaMetrics metrics only).
+
+```yaml
+apiVersion: 1
+datasources:
+  - name: VictoriaLogs
+    type: victoriametrics-logs-datasource
+    access: proxy
+    url: http://YOUR_SERVER_IP:9428
+    isDefault: true
+    jsonData:
+      dataSourceType: victorialogs
+```
+
 ## Migration from Loki
 
 1. Install VictoriaLogs on the same host as previous Loki
-2. Update Promtail client URL from `http://loki:3100/loki/api/v1/push` → `http://victorialogs:9428/api/v1/push`
-3. Install `victoriametrics-datasource` plugin in Grafana
-4. Add VictoriaLogs as data source in Grafana (type: `victoriametrics-datasource`, URL: `http://victorialogs:9428`)
+2. Update Promtail client URL from `http://loki:3100/loki/api/v1/push` → `http://victorialogs:9428/insert/loki/api/v1/push`
+3. Install `victoriametrics-logs-datasource` plugin in Grafana
+4. Add VictoriaLogs as data source in Grafana (type: `victoriametrics-logs-datasource`, URL: `http://victorialogs:9428`)
 5. Restart Promtail
-6. Verify data flows: `curl http://localhost:9428/api/v1/query -d 'query={_msg="*test*"}'`
+6. Verify data flows: `curl 'http://localhost:9428/select/logsql/query' -d 'query=_time:5m _msg:* | limit 5'`
 
-## Grafana Alerts with VictoriaLogs
+See `docs/07-migration-loki-to-victorialogs.md` for the full guide.
 
-Alert rules written in LogQL work with VictoriaLogs' LogsQL.  
-Update your Loki data source to point to VictoriaLogs instead, or create a separate data source.
+## Query examples (LogsQL)
 
-**Migration path:**
-1. Create new datasource for VictoriaLogs in Grafana
-2. Duplicate alert rules, swapping data source to VictoriaLogs
-3. Test rules, then decommission Loki
+```bash
+# All logs last 5m
+curl 'http://localhost:9428/select/logsql/query' -d 'query=_time:5m | limit 10'
+
+# Auth failures
+curl 'http://localhost:9428/select/logsql/query' -d 'query=_time:5m _stream:{job="auth"} ~"Failed password|Invalid user" | limit 10'
+
+# By host
+curl 'http://localhost:9428/select/logsql/query' -d 'query=_time:5m host="web-admin" | limit 10'
+
+# Count by stream (stats)
+curl 'http://localhost:9428/select/logsql/query' -d 'query=* | stats by (_stream) count() rows | limit 20'
+```
 
 ## Troubleshooting
 
 ```bash
 # Check if VictoriaLogs is running
-curl -s http://localhost:9428/api/v1/query -d 'query={_msg="*"}'
+curl -s http://localhost:9428/health
 
 # Check memory usage
 ps aux | grep victoria-logs | awk '{print $6/1024 " MB"}'
 
 # Check ingested logs count
-curl -s 'http://localhost:9428/api/v1/series?match[]={}'
+curl -s 'http://localhost:9428/select/logsql/query' -d 'query=* | stats count() rows'
 ```

@@ -20,22 +20,27 @@ docker run -d --restart unless-stopped \
 ```
 
 Verify:
+
 ```bash
-curl http://localhost:9428/api/v1/query -d 'query={_msg="*"}'
+curl http://localhost:9428/health
+curl 'http://localhost:9428/select/logsql/query' -d 'query=_time:5m _msg:* | limit 5'
 ```
 
 ## Step 2: Install Grafana Plugin
 
+The correct plugin for VictoriaLogs in Grafana is **`victoriametrics-logs-datasource`**
+(not `victoriametrics-datasource`, which is for VictoriaMetrics metrics).
+
 ```bash
 # Download plugin (check latest release number)
-wget https://github.com/VictoriaMetrics/victoriametrics-datasource/releases/download/v0.25.2/victoriametrics-datasource-v0.25.2.tar.gz
+wget https://github.com/VictoriaMetrics/victoriametrics-logs-datasource/releases/download/v0.30.1/victoriametrics-logs-datasource-v0.30.1.tar.gz
 
 # Extract to Grafana plugins
-tar -xzf victoriametrics-datasource-*.tar.gz
-sudo mv victoriametrics-datasource /var/lib/grafana/plugins/
+tar -xzf victoriametrics-logs-datasource-*.tar.gz
+sudo mv victoriametrics-logs-datasource /var/lib/grafana/plugins/
 
 # Allow unsigned plugin
-echo 'allow_loading_unsigned_plugins = victoriametrics-datasource' \
+echo 'allow_loading_unsigned_plugins = victoriametrics-logs-datasource' \
   | sudo tee -a /etc/grafana/grafana.ini
 
 # Restart Grafana
@@ -44,11 +49,13 @@ sudo systemctl restart grafana-server
 
 ## Step 3: Add Datasource in Grafana
 
-Via Grafana UI: Configuration → Data Sources → Add → "VictoriaMetrics"
+Via Grafana UI: Configuration → Data Sources → Add → "VictoriaLogs"
 
 - Name: `victorialogs`
 - URL: `http://YOUR_SERVER_IP:9428`
-- Type: `VictoriaLogs`
+- Type: `VictoriaLogs` (`victoriametrics-logs-datasource`)
+
+Or provision it with `grafana/provisioning/datasources/victorialogs.example.yml`.
 
 ## Step 4: Update Promtail
 
@@ -56,11 +63,14 @@ Edit `/etc/promtail/promtail-config.yaml`:
 
 ```yaml
 clients:
-  # Send to VictoriaLogs instead of Loki
-  - url: http://YOUR_SERVER_IP:9428/api/v1/push
+  # VictoriaLogs accepts the Loki push protocol at /insert/loki/api/v1/push
+  - url: http://YOUR_SERVER_IP:9428/insert/loki/api/v1/push
 ```
 
+> Note: the path is `/insert/loki/api/v1/push`, not `/api/v1/push`.
+
 Restart Promtail:
+
 ```bash
 sudo systemctl restart promtail
 ```
@@ -68,10 +78,9 @@ sudo systemctl restart promtail
 ## Step 5: Verify Data Flow
 
 ```bash
-# Query VictoriaLogs for recent logs
-curl -s 'http://localhost:9428/api/v1/query' \
-  -d 'query={_msg="*"}'
-  -d 'limit=5'
+# Query VictoriaLogs for recent logs (LogsQL)
+curl -s 'http://localhost:9428/select/logsql/query' \
+  -d 'query=_time:5m _stream:{job="auth"} | limit 5'
 
 # Check Promtail logs for errors
 journalctl -u promtail --no-pager -n 20 | tail
@@ -110,11 +119,14 @@ sudo rm -rf /var/lib/loki  # remove old data (WAL + chunks)
 
 ```bash
 # No data in VictoriaLogs
-curl -s 'http://localhost:9428/api/v1/query?query=_msg:*'
+curl -s 'http://localhost:9428/select/logsql/query?query=_time:5m%20_msg:*'
 
 # Check Promtail connectivity
 journalctl -u promtail --no-pager -n 30 | grep -i error
 
 # Memory check
 ps aux | grep victoria | awk '{print $6/1024 " MB"}'
+
+# Streams / series check
+curl -s 'http://localhost:9428/select/logsql/query' -d 'query=* | stats by (_stream) count() rows'
 ```
