@@ -6,14 +6,18 @@ positions:
   filename: /var/lib/promtail/positions.yml
 
 clients:
-  - url: ${LOKI_PUSH_URL}
+  # VictoriaLogs (default) — accepts Loki-compatible push at /insert/loki/api/v1/push
+  - url: ${VL_PUSH_URL}
+
+  # Loki (legacy) — remove after full migration
+  # - url: ${LOKI_PUSH_URL}   # legacy Loki (rollback only)
 
 scrape_configs:
   - job_name: auth
     static_configs:
       - targets: [localhost]
         labels:
-          org: ${ORG_LABEL}
+          instansi: ${ORG_LABEL}
           host: ${HOSTNAME}
           server_ip: ${SERVER_IP}
           job: auth
@@ -23,7 +27,7 @@ scrape_configs:
     static_configs:
       - targets: [localhost]
         labels:
-          org: ${ORG_LABEL}
+          instansi: ${ORG_LABEL}
           host: ${HOSTNAME}
           server_ip: ${SERVER_IP}
           job: syslog
@@ -33,7 +37,7 @@ scrape_configs:
     static_configs:
       - targets: [localhost]
         labels:
-          org: ${ORG_LABEL}
+          instansi: ${ORG_LABEL}
           host: ${HOSTNAME}
           server_ip: ${SERVER_IP}
           job: kern
@@ -43,17 +47,37 @@ scrape_configs:
     static_configs:
       - targets: [localhost]
         labels:
-          org: ${ORG_LABEL}
+          instansi: ${ORG_LABEL}
           host: ${HOSTNAME}
           server_ip: ${SERVER_IP}
           job: nginx
           __path__: /var/log/nginx/*.log
 
+  - job_name: nginx-access
+    static_configs:
+      - targets: [localhost]
+        labels:
+          instansi: ${ORG_LABEL}
+          host: ${HOSTNAME}
+          server_ip: ${SERVER_IP}
+          job: nginx-access
+          __path__: /var/log/nginx/*access.log
+
+  - job_name: laravel
+    static_configs:
+      - targets: [localhost]
+        labels:
+          instansi: ${ORG_LABEL}
+          host: ${HOSTNAME}
+          server_ip: ${SERVER_IP}
+          job: laravel
+          __path__: /www/wwwroot/*/storage/logs/*.log
+
   - job_name: custom-nginx
     static_configs:
       - targets: [localhost]
         labels:
-          org: ${ORG_LABEL}
+          instansi: ${ORG_LABEL}
           host: ${HOSTNAME}
           server_ip: ${SERVER_IP}
           job: custom-nginx

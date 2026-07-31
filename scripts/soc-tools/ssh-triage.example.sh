@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ssh-triage.example.sh
 #
-# Query Loki for SSH authentication failures on a given host.
+# Query VictoriaLogs for SSH authentication failures on a given host.
 # Copy this file to ~/soc-tools/ssh-triage.sh on the Hermes node and make it executable.
 #
 # Usage:
@@ -12,28 +12,20 @@
 #   ./ssh-triage.sh ".*" "1h"
 #
 # Environment:
-#   SOC_LOKI_URL  - Loki base URL (default: http://LOKI_SERVER_IP:3100)
+#   SOC_VL_URL  - VictoriaLogs query URL (default: http://VL_SERVER_IP:9428/select/logsql/query)
 #
-# Public template: replace LOKI_SERVER_IP and the instansi label value
+# Public template: replace VL_SERVER_IP and the instansi label value
 # before using in production.
 
 set -euo pipefail
 
-LOKI_URL="${SOC_LOKI_URL:-http://LOKI_SERVER_IP:3100}"
+VL_URL="${SOC_VL_URL:-http://VL_SERVER_IP:9428/select/logsql/query}"
 HOST="${1:-.*}"
 RANGE="${2:-30m}"
 
-QUERY="{instansi=\"example-org\", host=~\"${HOST}\"} \
-|~ \"Failed password|Invalid user|authentication failure|Disconnected from authenticating user|PAM\""
+# LogsQL — auth failures grouped per source IP
+QUERY="_time:${RANGE} _stream:{instansi=\"example-org\", job=\"auth\", host=~\"${HOST}\"} ~\"(?i)(Failed password|Invalid user|authentication failure|Disconnected from authenticating user|PAM)\" | limit 100"
 
-curl -sG "${LOKI_URL}/loki/api/v1/query_range" \
+curl -sG "${VL_URL}" \
   --data-urlencode "query=${QUERY}" \
-  --data-urlencode "limit=100" \
-  --data-urlencode "direction=backward" \
-  --data-urlencode "start=$(date -u -d "${RANGE} ago" +%s)000000000" \
-  --data-urlencode "end=$(date -u +%s)000000000" \
-  | jq -r '
-    .data.result[]? as $stream |
-    $stream.values[]? |
-    "\($stream.stream.host // "-") \($stream.stream.server_ip // "-") | \(.[1])"
-  '
+  | jq -r '"\(.host // "-") \(.server_ip // "-") | \(._msg // "")"'

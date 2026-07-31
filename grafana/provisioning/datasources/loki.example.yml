@@ -1,11 +1,12 @@
+# LEGACY Loki datasource — rollback only. Default is victorialogs.example.yml.
 apiVersion: 1
 
 datasources:
-  - name: Loki
+  - name: Loki (legacy)
     type: loki
     access: proxy
     url: ${LOKI_URL}
-    isDefault: true
+    isDefault: false
     editable: true
     jsonData:
       maxLines: 1000

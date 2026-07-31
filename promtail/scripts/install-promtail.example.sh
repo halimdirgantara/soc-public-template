@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-LOKI_PUSH_URL="${LOKI_PUSH_URL:-http://10.0.0.10:3100/loki/api/v1/push}"
+LOKI_PUSH_URL="${LOKI_PUSH_URL:-http://10.0.0.10:9428/insert/loki/api/v1/push}"
 ORG_LABEL="${ORG_LABEL:-example-org}"
-SERVER_IP="${SERVER_IP:-$(hostname -I | awk "{print \$1}")}"
+SERVER_IP="${SERVER_IP:-$(hostname -I | awk '{print $1}')}"
 HOSTNAME_VALUE="${HOSTNAME_VALUE:-$(hostname)}"
 
 echo "[INFO] Installing Promtail template"
-echo "[INFO] LOKI_PUSH_URL=${LOKI_PUSH_URL}"
+echo "[INFO] PUSH_URL=${LOKI_PUSH_URL} (VictoriaLogs — /insert/loki/api/v1/push)"
 echo "[INFO] ORG_LABEL=${ORG_LABEL}"
 echo "[INFO] SERVER_IP=${SERVER_IP}"
 echo "[INFO] HOSTNAME=${HOSTNAME_VALUE}"
