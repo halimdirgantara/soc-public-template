@@ -1,6 +1,6 @@
 # Open SOC Deployment Template
 
-<img width="1448" height="1086" alt="image" src="https://github.com/user-attachments/assets/6f4253c5-da47-4f68-a2e5-069f6b5b4d7d" />
+<img width="1024" height="572" alt="image" src="https://github.com/user-attachments/assets/5cf2f9de-4144-4c64-a3b1-bc12594b070b" />
 
 A sanitized public template for deploying a lightweight open-source SOC stack.
 
