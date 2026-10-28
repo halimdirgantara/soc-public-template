@@ -86,7 +86,7 @@ exposure_type="public_direct|reverse_proxy|internal"
 environment="lab|staging|production"
 ```
 
-> Note: the template uses `instansi` (the production label used by Pemkab Sekadau SOC) instead of `org`. Adjust per deployment.
+> Note: the template uses `instansi` (the production label used by organisasi contoh SOC) instead of `org`. Adjust per deployment.
 
 ## 7. Functional Requirements
 
