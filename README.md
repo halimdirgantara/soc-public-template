@@ -2,7 +2,7 @@
 
 <img width="1448" height="1086" alt="image" src="https://github.com/user-attachments/assets/6f4253c5-da47-4f68-a2e5-069f6b5b4d7d" />
 
-|A sanitized public template for deploying a lightweight open-source SOC stack.
+A sanitized public template for deploying a lightweight open-source SOC stack.
 
 This repository provides example configurations, scripts, alert templates, and operational documentation for:
 
@@ -50,8 +50,8 @@ Use two repositories:
 ## Quick Start
 
 ```powershell
-git clone https://github.com/YOUR-ORG/open-soc-template.git
-cd open-soc-template
+git clone https://github.com/YOUR-ORG/soc-public-template.git
+cd soc-public-template
 copy .env.example .env
 ```
 
@@ -90,9 +90,12 @@ Edit `.env` locally. Do not commit it.
 5. Deploy CrowdSec on exposed servers.
 6. Deploy firewall bouncer after whitelist review.
 7. Configure Telegram alerting.
-8. Review dashboards and alert thresholds.
-9. Deploy Hermes Agent and SOC triage tools — see `docs/06-hermes-soc-tools-triage.md`.
-10. Keep production values in a private repository.
+8. Import dashboards and alert rules from `grafana/`; ganti placeholder UID datasource.
+9. Jalankan pipeline Cloudflare: `cloudflare/cf-security-pull.example.py` (cron 5 menit),
+   lalu `cf-autoban.example.py` untuk blokir otomatis.
+10. Arahkan Prometheus ke `cloudflare/vl-exporter.example.py` (lihat `prometheus/`).
+11. Deploy Hermes Agent and SOC triage tools — see `docs/06-hermes-soc-tools-triage.md`.
+12. Keep production values in a private repository.
 
 ## Documentation
 
@@ -112,7 +115,7 @@ Edit `.env` locally. Do not commit it.
 | Skill | Description |
 |---|---|
 | `skills/00-soc-architecture-governance` | SOC architecture and governance |
-| `skills/01-grafana-loki` | Grafana and Loki configuration |
+| `skills/01-grafana-victorialogs` | Grafana and VictoriaLogs configuration |
 | `skills/02-promtail-mass-deploy` | Promtail mass deployment |
 | `skills/03-crowdsec-firewall-bouncer` | CrowdSec and firewall bouncer |
 | `skills/04-telegram-alerting` | Telegram alerting |
