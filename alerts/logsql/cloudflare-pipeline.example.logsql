@@ -1,0 +1,44 @@
+# VictoriaLogs (LogsQL) — pipeline Cloudflare
+#
+# Stream: job=cf-security   (diisi oleh cloudflare/cf-security-pull.example.py)
+# Kolom : action, clientIP, clientCountryName, clientAsn, clientRequestPath,
+#          clientRequestHost, edgeResponseStatus, description, ruleId, datetime
+#
+# Semua contoh memakai _time (bukan [5m]); jalankan lewat:
+#   curl -s "$VL_URL/select/logsql/query" --data-urlencode "query=<query>"
+
+# 1. Ringkasan aksi 24 jam (blokir / challenge / 429)
+_time:24h job:cf-security | stats by (action) count() as jumlah | sort by (jumlah desc)
+
+# 2. Tren blokir per jam
+_time:24h job:cf-security action:block | stats by (_time:1h) count() as blokir
+
+# 3. Top 10 IP penyerang
+_time:24h job:cf-security action:block | stats by (clientIP, clientCountryName) count() as serangan | sort by (serangan desc) | limit 10
+
+# 4. Path paling sering diserang
+_time:24h job:cf-security action:block | stats by (clientRequestPath) count() as jumlah | sort by (jumlah desc) | limit 10
+
+# 5. Situs (host) paling sering diserang
+_time:24h job:cf-security action:block | stats by (clientRequestHost) count() as jumlah | sort by (jumlah desc) | limit 10
+
+# 6. Teknik serangan (deskripsi aturan Cloudflare)
+_time:24h job:cf-security action:block | stats by (description) count() as jumlah | sort by (jumlah desc) | limit 10
+
+# 7. Lonjakan 5 menit — dipakai alert
+_time:5m job:cf-security action:block | stats count() as blokir
+
+# 8. Rate limit terpicu (HTTP 429)
+_time:5m job:cf-security edgeResponseStatus:429 | stats count() as kena_rate_limit
+
+# 9. Challenge yang dikirim ke pengunjung
+_time:5m job:cf-security action:challenge | stats count() as challenge
+
+# 10. Pipeline masih hidup? (event terakhir)
+_time:15m job:cf-security | stats count() as event, max(_time) as terakhir
+
+# 11. Log serangan terbaru (untuk ditampilkan di dashboard)
+_time:6h job:cf-security action:block | fields _time, clientIP, clientCountryName, clientRequestHost, clientRequestPath, description | sort by (_time desc) | limit 100
+
+# 12. Pengecekan IP tertentu (ganti 203.0.113.10)
+_time:24h job:cf-security clientIP:203.0.113.10 | stats by (action, description) count() as jumlah

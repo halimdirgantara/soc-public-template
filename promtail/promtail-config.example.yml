@@ -10,7 +10,6 @@ clients:
   - url: ${VL_PUSH_URL}
 
   # Loki (legacy) — remove after full migration
-  # - url: ${LOKI_PUSH_URL}   # legacy Loki (rollback only)
 
 scrape_configs:
   - job_name: auth

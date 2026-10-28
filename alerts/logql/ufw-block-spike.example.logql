@@ -1,5 +1,0 @@
-sum by (host, server_ip) (
-  count_over_time(
-    {org="example-org"} |= "UFW BLOCK" [10m]
-  )
-)

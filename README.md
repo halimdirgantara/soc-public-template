@@ -8,12 +8,13 @@ This repository provides example configurations, scripts, alert templates, and o
 
 - Grafana
 - VictoriaLogs (default log store — low-memory Loki replacement)
-- Loki (legacy — kept for rollback only)
 - Promtail
 - CrowdSec
 - CrowdSec Firewall Bouncer
 - Nginx reverse proxy
 - Cloudflare Tunnel notes
+- Cloudflare WAF event pipeline (pull, dashboards, alerts, auto-ban)
+- Prometheus exporter for SOC metrics
 - Telegram alerting
 - Hermes Agent SOC triage tools
 
@@ -62,15 +63,16 @@ Edit `.env` locally. Do not commit it.
 .
 ├── inventory/
 ├── grafana/
-├── victorialogs/            # default log store
-├── loki/                    # legacy (rollback only)
+│   ├── dashboards/          # contoh dashboard: teknis & panduan awam
+│   └── provisioning/        # datasource + aturan alert
+├── victorialogs/            # log store (retensi 90d)
+├── prometheus/              # contoh scrape config
 ├── promtail/
 ├── crowdsec/
 ├── nginx/                   # real-IP, WAF traversal, contoh aturan blokir
-├── cloudflare/
+├── cloudflare/              # pipeline: pull, auto-ban, exporter
 ├── alerts/
-│   ├── logsql/              # VictoriaLogs queries (default)
-│   └── logql/               # Loki queries (legacy)
+│   └── logsql/              # query VictoriaLogs (termasuk pipeline Cloudflare)
 ├── scripts/
 │   ├── soc-tools/           # Hermes triage scripts
 │   └── waf/                 # pemasang WAF + blokir IP (nginx & Caddy)
@@ -82,7 +84,7 @@ Edit `.env` locally. Do not commit it.
 ## Main Workflow
 
 1. Prepare inventory using `inventory/hosts.example.csv`.
-2. Deploy VictoriaLogs (default — see `victorialogs/`). Loki is legacy/rollback only.
+2. Deploy VictoriaLogs (`victorialogs/`, retensi 90 hari).
 3. Deploy Grafana and configure the VictoriaLogs datasource (`victoriametrics-logs-datasource` plugin).
 4. Deploy Promtail agents (push to `VL_PUSH_URL`, e.g. `http://<vl>:9428/insert/loki/api/v1/push`).
 5. Deploy CrowdSec on exposed servers.
@@ -102,7 +104,7 @@ Edit `.env` locally. Do not commit it.
 | `docs/04-make-scripts-executable.md` | Script permissions |
 | `docs/05-fail2ban-hermes-prep.md` | Fail2Ban hardening and Hermes node prep |
 | `docs/06-hermes-soc-tools-triage.md` | Hermes Agent, SOC triage tools, local skills |
-| `docs/07-migration-loki-to-victorialogs.md` | Loki → VictoriaLogs migration guide |
+| `docs/08-cloudflare-pipeline.md` | Pipeline Cloudflare: tarik event, dashboard, alert, auto-ban |
 | `docs/runbook-waf-cloudflare-blocklist.public.md` | WAF traversal, real-IP CDN, blokir IP di origin |
 
 ## Skills

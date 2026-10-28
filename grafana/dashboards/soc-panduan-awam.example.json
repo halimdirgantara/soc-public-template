@@ -1,0 +1,813 @@
+{
+  "uid": null,
+  "title": "Pantauan Keamanan (Mudah Dibaca)",
+  "description": "Ringkasan serangan dari luar dan status perlindungan situs organisasi contoh.",
+  "tags": [
+    "SOC",
+    "Cloudflare",
+    "Ringkas"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Status Pemantauan",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security _time:15m | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "textMode": "value_and_name",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "range",
+              "options": {
+                "from": 0,
+                "to": 0,
+                "result": {
+                  "text": "TIDAK ADA DATA",
+                  "color": "red",
+                  "index": 0
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 1,
+                "to": null,
+                "result": {
+                  "text": "PEMANTAUAN AKTIF",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "description": "Hijau = data serangan masih masuk. Merah = pemantauan berhenti, hubungi petugas TI."
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Serangan dari luar - DIBLOKIR (24 jam)",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:block | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "description": "Setiap angka adalah percobaan jahat yang berhasil ditahan. Angka besar = perlindungan bekerja, bukan situs down."
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Percobaan menebak sandi - ditahan",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security status:429 | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "description": "Robot yang mencoba login berkali-kali; ditahan otomatis oleh pembatas percobaan."
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Negara asal penyerang",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:block | stats by (country) count() | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "description": "Jumlah negara berbeda yang mencoba menyerang dalam 24 jam terakhir."
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Mencari file rahasia (.env / .git)",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:block AND _msg:~\"(.env|.git|etc/passwd)\" | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Mencoba masuk WordPress",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:block AND _msg:~\"(wp-login|xmlrpc|wp-admin|wp-json)\" | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Mencari celah di server",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:block AND _msg:~\"(cgi-bin|/bin/sh|cmd.exe|shell)\" | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Pemindai otomatis diuji (challenge)",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:managed_challenge | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "description": "Pengunjung yang dicurigai robot diminta verifikasi tambahan sebelum masuk."
+    },
+    {
+      "id": 9,
+      "type": "bargauge",
+      "title": "10 penyerang paling aktif (24 jam)",
+      "description": "Alamat IP yang paling sering mencoba masuk. Semua sudah diblokir otomatis.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:block | stats by (ip, country) count() as serangan | sort by (serangan) desc | limit 10"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "serangan\\{country=\\\"([A-Z]+)\\\",ip=\\\"([^\\\"]+)\\\"\\}",
+            "replacement": "$2 - $1"
+          }
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "type": "bargauge",
+      "title": "Situs yang paling sering diserang (24 jam)",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:block | stats by (host) count() as serangan | sort by (serangan) desc | limit 8"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "serangan\\{host=\\\"([^\\\"]+)\\\"\\}",
+            "replacement": "$1"
+          }
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Aktivitas serangan per jam",
+      "description": "Naik-turunnya percobaan serangan sepanjang hari.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "YOUR_INFINITY_UID"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "YOUR_INFINITY_UID"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://10.0.0.31:9101/cf_stats.json?kind=hourly",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "",
+          "columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "fields": {},
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "waktu"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "custom": {
+            "fillOpacity": 25,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "Log serangan terbaru",
+      "description": "100 percobaan terakhir: waktu, dari mana, menyerang situs apa, jenis serangannya, dan tindakan sistem.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "YOUR_INFINITY_UID"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "YOUR_INFINITY_UID"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://10.0.0.31:9101/cf_events.json?limit=100",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "",
+          "columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "waktu": 0,
+              "tindakan": 1,
+              "jenis": 2,
+              "ip": 3,
+              "negara": 4,
+              "situs": 5,
+              "target": 6,
+              "aturan": 7
+            },
+            "renameByName": {
+              "waktu": "Waktu",
+              "tindakan": "Tindakan",
+              "jenis": "Jenis serangan",
+              "ip": "IP penyerang",
+              "negara": "Negara",
+              "situs": "Situs",
+              "target": "Yang dicoba",
+              "aturan": "Aturan teknis"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Waktu",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tindakan"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Diblokir": {
+                        "text": "Diblokir",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Diverifikasi": {
+                        "text": "Diverifikasi",
+                        "color": "yellow",
+                        "index": 1
+                      },
+                      "Dibatasi": {
+                        "text": "Dibatasi",
+                        "color": "orange",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Waktu"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Negara"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Jenis serangan"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "type": "text",
+      "title": "Cara membaca halaman ini",
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Panduan singkat\n\n- **Status Pemantauan** — hijau **PEMANTAUAN AKTIF** artinya data masih masuk. Merah **TIDAK ADA DATA** artinya pemantauan berhenti, hubungi petugas TI.\n- **Serangan diblokir** — jumlah percobaan jahat yang sudah ditahan otomatis. **Angka besar = perlindungan bekerja**, bukan tanda situs bermasalah.\n- **Percobaan menebak sandi** — robot mencoba menebak kata sandi login; sudah ditahan otomatis.\n- **10 penyerang teratas** — alamat IP yang paling sering mencoba masuk, lengkap dengan kode negaranya.\n- **Situs yang diserang** — layanan mana yang paling sering jadi sasaran.\n- **Log serangan terbaru** — daftar 100 percobaan terakhir, lengkap dengan waktu, IP, negara, jenis serangan, dan tindakan sistem (Diblokir / Diverifikasi / Dibatasi).\n- Semua serangan di halaman ini **sudah diblokir**. Tidak perlu tindakan, kecuali status pemantauan merah atau angka melonjak lebih dari 10 kali lipat tiba-tiba."
+      }
+    }
+  ],
+  "id": null
+}

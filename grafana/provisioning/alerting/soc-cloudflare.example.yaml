@@ -1,0 +1,283 @@
+apiVersion: 1
+groups:
+- orgId: 1
+  name: example_soc_cloudflare
+  folder: SOC-Alert
+  interval: 1m
+  rules:
+  - uid: example_cf_block_spike
+    title: Example_CF_Block_Spike
+    condition: C
+    data:
+    - refId: A
+      datasourceUid: YOUR_PROMETHEUS_UID
+      relativeTimeRange: {from: 600, to: 0}
+      model:
+        refId: A
+        expr: vl_rule_cf_block
+        instant: true
+        datasource: {type: prometheus, uid: YOUR_PROMETHEUS_UID}
+    - refId: B
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+        datasource: {type: __expr__, uid: __expr__}
+    - refId: C
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator: {type: gt, params: [300]}
+          operator: {type: and}
+          query: {params: [C]}
+          reducer: {type: last}
+          type: query
+        datasource: {type: __expr__, uid: __expr__}
+    noDataState: OK
+    execErrState: Error
+    for: 5m
+    annotations:
+      summary: "🛡️ Lonjakan blokir Cloudflare (>300 / 5 menit)"
+      description: 'Jumlah blokir: {{ $value }} dalam 5 menit. Periksa dashboard SOC / Cloudflare WAF (top IP, rule, path).'
+    labels:
+      severity: warning
+      team: soc
+      alert_type: waf
+      telegram: 'true'
+      source: cloudflare
+      system: example
+  - uid: example_cf_topip
+    title: Example_CF_TopIP_Aggressive
+    condition: C
+    data:
+    - refId: A
+      datasourceUid: YOUR_PROMETHEUS_UID
+      relativeTimeRange: {from: 900, to: 0}
+      model:
+        refId: A
+        expr: vl_rule_cf_topip
+        instant: true
+        datasource: {type: prometheus, uid: YOUR_PROMETHEUS_UID}
+    - refId: B
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+        datasource: {type: __expr__, uid: __expr__}
+    - refId: C
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator: {type: gt, params: [150]}
+          operator: {type: and}
+          query: {params: [C]}
+          reducer: {type: last}
+          type: query
+        datasource: {type: __expr__, uid: __expr__}
+    noDataState: OK
+    execErrState: Error
+    for: 5m
+    annotations:
+      summary: "🚨 Satu IP memicu >150 blokir Cloudflare dalam 10 menit"
+      description: 'IP teratas mencapai {{ $value }} blokir. Cek dashboard, pertimbangkan ban CrowdSec / blocklist.'
+    labels:
+      severity: critical
+      team: soc
+      alert_type: waf
+      telegram: 'true'
+      source: cloudflare
+      system: example
+  - uid: example_cf_ratelimit_429
+    title: Example_CF_RateLimit_429
+    condition: C
+    data:
+    - refId: A
+      datasourceUid: YOUR_PROMETHEUS_UID
+      relativeTimeRange: {from: 600, to: 0}
+      model:
+        refId: A
+        expr: vl_rule_cf_429
+        instant: true
+        datasource: {type: prometheus, uid: YOUR_PROMETHEUS_UID}
+    - refId: B
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+        datasource: {type: __expr__, uid: __expr__}
+    - refId: C
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator: {type: gt, params: [30]}
+          operator: {type: and}
+          query: {params: [C]}
+          reducer: {type: last}
+          type: query
+        datasource: {type: __expr__, uid: __expr__}
+    noDataState: OK
+    execErrState: Error
+    for: 5m
+    annotations:
+      summary: "🔐 Rate limit Cloudflare memblokir >30 request login / 5 menit"
+      description: 'Jumlah 429: {{ $value }}. Indikasi brute force atau percobaan login berulang.'
+    labels:
+      severity: critical
+      team: soc
+      alert_type: brute-force
+      telegram: 'true'
+      source: cloudflare
+      system: example
+  - uid: example_cf_sensitive_probe
+    title: Example_CF_SensitivePath_Spike
+    condition: C
+    data:
+    - refId: A
+      datasourceUid: YOUR_PROMETHEUS_UID
+      relativeTimeRange: {from: 600, to: 0}
+      model:
+        refId: A
+        expr: vl_rule_cf_sensitive
+        instant: true
+        datasource: {type: prometheus, uid: YOUR_PROMETHEUS_UID}
+    - refId: B
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+        datasource: {type: __expr__, uid: __expr__}
+    - refId: C
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator: {type: gt, params: [400]}
+          operator: {type: and}
+          query: {params: [C]}
+          reducer: {type: last}
+          type: query
+        datasource: {type: __expr__, uid: __expr__}
+    noDataState: OK
+    execErrState: Error
+    for: 5m
+    annotations:
+      summary: "🕵️ Lonjakan probe jalur sensitif (.env/.git/cgi-bin) di Cloudflare"
+      description: 'Jumlah blokir jalur sensitif: {{ $value }} dalam 5 menit.'
+    labels:
+      severity: info
+      team: soc
+      alert_type: scanning
+      telegram: 'true'
+      source: cloudflare
+      system: example
+  - uid: example_cf_challenge_spike
+    title: Example_CF_Challenge_Spike
+    condition: C
+    data:
+    - refId: A
+      datasourceUid: YOUR_PROMETHEUS_UID
+      relativeTimeRange: {from: 600, to: 0}
+      model:
+        refId: A
+        expr: vl_rule_cf_challenge
+        instant: true
+        datasource: {type: prometheus, uid: YOUR_PROMETHEUS_UID}
+    - refId: B
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+        datasource: {type: __expr__, uid: __expr__}
+    - refId: C
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator: {type: gt, params: [200]}
+          operator: {type: and}
+          query: {params: [C]}
+          reducer: {type: last}
+          type: query
+        datasource: {type: __expr__, uid: __expr__}
+    noDataState: OK
+    execErrState: Error
+    for: 5m
+    annotations:
+      summary: "🤖 Lonjakan challenge Cloudflare (>200 / 5 menit)"
+      description: 'Jumlah challenge: {{ $value }}. Kemungkinan bot masif; cek negara/IP utama.'
+    labels:
+      severity: info
+      team: soc
+      alert_type: bot
+      telegram: 'true'
+      source: cloudflare
+      system: example
+  - uid: example_cf_pipeline_down
+    title: Example_CF_Pipeline_Stalled
+    condition: C
+    data:
+    - refId: A
+      datasourceUid: YOUR_PROMETHEUS_UID
+      relativeTimeRange: {from: 1800, to: 0}
+      model:
+        refId: A
+        expr: vl_rule_cf_events_15m
+        instant: true
+        datasource: {type: prometheus, uid: YOUR_PROMETHEUS_UID}
+    - refId: B
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+        datasource: {type: __expr__, uid: __expr__}
+    - refId: C
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator: {type: lt, params: [1]}
+          operator: {type: and}
+          query: {params: [C]}
+          reducer: {type: last}
+          type: query
+        datasource: {type: __expr__, uid: __expr__}
+    noDataState: Alerting
+    execErrState: Error
+    for: 30m
+    annotations:
+      summary: "⚠️ Pipeline Cloudflare tidak mengirim event"
+      description: 'Tidak ada event cf-security dalam 15 menit. Periksa cron cf_security_pull.py dan token Cloudflare.'
+    labels:
+      severity: warning
+      team: soc
+      alert_type: pipeline
+      telegram: 'true'
+      source: cloudflare
+      system: example

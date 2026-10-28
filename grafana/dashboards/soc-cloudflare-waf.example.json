@@ -1,0 +1,759 @@
+{
+  "uid": null,
+  "title": "SOC / Cloudflare WAF",
+  "description": "Statistik serangan dari luar, teknik yang dipakai, dan log terbaru.",
+  "tags": [
+    "SOC",
+    "Cloudflare",
+    "WAF"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Serangan diblokir (24 jam)",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:block | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value_and_name",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Rate limit 429 (24 jam)",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security status:429 | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value_and_name",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Challenge (24 jam)",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security action:managed_challenge | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "textMode": "value_and_name",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Pipeline (event 15 menit)",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "YOUR_VICTORIALOGS_UID"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "stats",
+          "instant": true,
+          "expr": "job:cf-security _time:15m | stats count() as v"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "textMode": "value_and_name",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "range",
+              "options": {
+                "from": 0,
+                "to": 0,
+                "result": {
+                  "text": "TIDAK ADA DATA",
+                  "color": "red",
+                  "index": 0
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 1,
+                "to": null,
+                "result": {
+                  "text": "AKTIF",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "description": "Hijau = data Cloudflare masih masuk."
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Blokir per jam (24 jam)",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "YOUR_INFINITY_UID"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "YOUR_INFINITY_UID"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://10.0.0.31:9101/cf_stats.json?kind=hourly",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "",
+          "columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "fields": {},
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "waktu"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "custom": {
+            "fillOpacity": 30,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Top 10 IP penyerang",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "YOUR_INFINITY_UID"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "YOUR_INFINITY_UID"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://10.0.0.31:9101/cf_stats.json?kind=ip&limit=10",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "",
+          "columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "ip": 0,
+              "negara": 1,
+              "jumlah": 2
+            },
+            "renameByName": {
+              "ip": "IP",
+              "negara": "Negara",
+              "jumlah": "Serangan"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Serangan",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "description": "Seluruh IP di bawah sudah diblokir otomatis."
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Teknik serangan teratas",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "YOUR_INFINITY_UID"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "YOUR_INFINITY_UID"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://10.0.0.31:9101/cf_stats.json?kind=rule&limit=10",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "",
+          "columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "jenis": 0,
+              "aturan": 1,
+              "jumlah": 2
+            },
+            "renameByName": {
+              "jenis": "Jenis serangan",
+              "aturan": "Aturan Cloudflare",
+              "jumlah": "Jumlah"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Jumlah",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Path paling sering diserang",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "YOUR_INFINITY_UID"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "YOUR_INFINITY_UID"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://10.0.0.31:9101/cf_stats.json?kind=path&limit=10",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "",
+          "columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "target": 0,
+              "jumlah": 1
+            },
+            "renameByName": {
+              "target": "Path",
+              "jumlah": "Serangan"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Serangan",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Situs paling sering diserang",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "YOUR_INFINITY_UID"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "YOUR_INFINITY_UID"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://10.0.0.31:9101/cf_stats.json?kind=host&limit=10",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "",
+          "columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "situs": 0,
+              "jumlah": 1
+            },
+            "renameByName": {
+              "situs": "Situs",
+              "jumlah": "Serangan"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Serangan",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Log serangan terbaru (100)",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "YOUR_INFINITY_UID"
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "YOUR_INFINITY_UID"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://10.0.0.31:9101/cf_events.json?limit=100",
+          "url_options": {
+            "method": "GET"
+          },
+          "root_selector": "",
+          "columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "aturan": false
+            },
+            "indexByName": {
+              "waktu": 0,
+              "tindakan": 1,
+              "jenis": 2,
+              "ip": 3,
+              "negara": 4,
+              "situs": 5,
+              "target": 6,
+              "aturan": 7
+            },
+            "renameByName": {
+              "waktu": "Waktu",
+              "tindakan": "Tindakan",
+              "jenis": "Jenis serangan",
+              "ip": "IP",
+              "negara": "Negara",
+              "situs": "Situs",
+              "target": "Path",
+              "aturan": "Aturan"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Waktu",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tindakan"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Diblokir": {
+                        "text": "Diblokir",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Diverifikasi": {
+                        "text": "Diverifikasi",
+                        "color": "yellow",
+                        "index": 1
+                      },
+                      "Dibatasi": {
+                        "text": "Dibatasi",
+                        "color": "orange",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "id": null
+}

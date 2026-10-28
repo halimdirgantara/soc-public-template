@@ -1,0 +1,22 @@
+# Contoh konfigurasi scrape Prometheus untuk SOC.
+# Letakkan di /etc/prometheus/prometheus.yml lalu sesuaikan alamat host.
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["127.0.0.1:9090"]
+
+  # Exporter metrik VictoriaLogs + Cloudflare (lihat cloudflare/vl-exporter.example.py)
+  - job_name: vl-exporter
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["10.0.0.31:9101"]
+
+  # Bila memakai node_exporter di tiap host, tambahkan di sini:
+  # - job_name: node
+  #   static_configs:
+  #     - targets: ["10.0.0.10:9100", "10.0.0.11:9100"]

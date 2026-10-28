@@ -1,8 +1,8 @@
-# Skill: Grafana and Loki Public Templates
+# Skill: Grafana and VictoriaLogs Public Templates
 
 ## Purpose
 
-Use this skill when creating Grafana, Loki, dashboard, or alert templates.
+Use this skill when creating Grafana, VictoriaLogs, dashboard, or alert templates.
 
 ## Rules
 

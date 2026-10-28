@@ -11,4 +11,5 @@ services:
       - -storageDataPath=/victoria-logs-data
       - -httpListenAddr=:9428
       - -memory.allowedPercent=20
+      - -retentionPeriod=90d   # sesuaikan kebijakan retensi instansi
       - -logNewStreams=false
