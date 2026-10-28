@@ -66,13 +66,14 @@ Edit `.env` locally. Do not commit it.
 ├── loki/                    # legacy (rollback only)
 ├── promtail/
 ├── crowdsec/
-├── nginx/
+├── nginx/                   # real-IP, WAF traversal, contoh aturan blokir
 ├── cloudflare/
 ├── alerts/
 │   ├── logsql/              # VictoriaLogs queries (default)
 │   └── logql/               # Loki queries (legacy)
 ├── scripts/
-│   └── soc-tools/           # Hermes triage scripts
+│   ├── soc-tools/           # Hermes triage scripts
+│   └── waf/                 # pemasang WAF + blokir IP (nginx & Caddy)
 ├── docs/
 └── skills/
     └── 08-hermes-soc-local/ # Local SOC triage skill for Hermes
@@ -102,6 +103,7 @@ Edit `.env` locally. Do not commit it.
 | `docs/05-fail2ban-hermes-prep.md` | Fail2Ban hardening and Hermes node prep |
 | `docs/06-hermes-soc-tools-triage.md` | Hermes Agent, SOC triage tools, local skills |
 | `docs/07-migration-loki-to-victorialogs.md` | Loki → VictoriaLogs migration guide |
+| `docs/runbook-waf-cloudflare-blocklist.public.md` | WAF traversal, real-IP CDN, blokir IP di origin |
 
 ## Skills
 
