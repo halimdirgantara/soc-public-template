@@ -18,35 +18,6 @@ This repository provides example configurations, scripts, alert templates, and o
 - Telegram alerting
 - Hermes Agent SOC triage tools
 
-## Security Notice
-
-This is a public-safe template. It intentionally uses dummy values such as:
-
-- `10.0.0.10`
-- `10.0.0.11`
-- `203.0.113.10`
-- `logs.example.org`
-- `example-org`
-
-Do not commit:
-
-- Real private IP addresses
-- Real public IP addresses
-- Production hostnames
-- Telegram bot tokens
-- Cloudflare credentials
-- SSH private keys
-- Grafana admin passwords
-- CrowdSec API keys
-- Production inventories
-
-## Recommended Repository Split
-
-Use two repositories:
-
-1. Public repository: sanitized templates, generic scripts, documentation, and examples.
-2. Private repository: production inventory, real domains, real IP addresses, secrets references, and actual deployment state.
-
 ## Quick Start
 
 ```powershell
